@@ -16,7 +16,7 @@ import           Data.Typeable
 import           Data.Vector.Fusion.Stream.Monadic (Stream)
 import           Data.Vector.Unboxed.Deriving
 import           Data.Vector.Unboxed (Unbox(..))
-import           GHC.Base (quotRemInt)
+import           GHC.Base (quotRemInt, when)
 import           GHC.Generics
 import           GHC.TypeNats
 import qualified Data.Vector.Fusion.Stream.Monadic as SM
