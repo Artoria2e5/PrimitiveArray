@@ -1,3 +1,4 @@
+{-# LANGUAGE InstanceSigs #-}
 
 module Data.PrimitiveArray.Index.Class where
 
@@ -23,8 +24,6 @@ import qualified Data.Vector.Fusion.Stream.Monadic as SM
 import           Test.QuickCheck
 import           Text.Printf
 import           Data.Type.Equality
-
-
 
 infixl 3 :.
 
@@ -233,6 +232,15 @@ deriving instance Show     (LimitType Z)
 deriving instance Data     (LimitType Z)
 deriving instance Typeable (LimitType Z)
 deriving instance Bounded  (LimitType Z)
+instance Binary    (LimitType Z)
+instance Serialize (LimitType Z)
+instance ToJSON    (LimitType Z)
+instance FromJSON  (LimitType Z)
+instance Hashable  (LimitType Z)
+instance NFData (LimitType Z) where
+  rnf ZZ = ()
+  {-# Inline rnf #-}
+
 
 instance (Index zs, Index z) => Index (zs:.z) where
   data LimitType (zs:.z) = !(LimitType zs) :.. !(LimitType z)
@@ -266,6 +274,11 @@ deriving instance
   , Data z , Data (LimitType z) , Typeable z
   ) => Data    (LimitType (zs:.z))
 deriving instance (Bounded (LimitType zs), Bounded (LimitType z)) => Bounded (LimitType (zs:.z))
+instance (Generic (LimitType zs), Generic (LimitType z), Binary (LimitType zs), Binary (LimitType z)) => Binary (LimitType (zs:.z))
+instance (Generic (LimitType zs), Generic (LimitType z), Serialize (LimitType zs), Serialize (LimitType z)) => Serialize (LimitType (zs:.z))
+instance (Generic (LimitType zs), Generic (LimitType z), ToJSON (LimitType zs), ToJSON (LimitType z)) => ToJSON (LimitType (zs:.z))
+instance (Generic (LimitType zs), Generic (LimitType z), FromJSON (LimitType zs), FromJSON (LimitType z)) => FromJSON (LimitType (zs:.z))
+instance (Generic (LimitType zs), Generic (LimitType z), Hashable (LimitType zs), Hashable (LimitType z)) => Hashable (LimitType (zs:.z))
 
 --instance (Index zs, Index z) => Index (zs:>z) where
 --  type LimitType (zs:>z) = LimitType zs:>LimitType z
@@ -342,3 +355,8 @@ instance (SparseBucket i, SparseBucket is) => SparseBucket (is:.i) where
   {-# Inline manhattanMax #-}
   manhattanMax (zz:..z) = manhattanMax zz + manhattanMax z
 
+
+-- Catch-all serialization and deep evaluation instances for LimitType.
+instance (NFData z, Generic (LimitType z)) => NFData (LimitType z) where
+  rnf = rnf
+  {-# Inline rnf #-}

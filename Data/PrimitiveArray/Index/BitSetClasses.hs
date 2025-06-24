@@ -76,6 +76,16 @@ instance Index (Boundary i t) where
   showBound (LtBoundary b) = ["LtBoundary " ++ show b]
   showIndex (Boundary b) = ["Boundary " ++ show b]
 
+deriving instance Eq      (LimitType (Boundary i t))
+deriving instance Generic (LimitType (Boundary i t))
+deriving instance Read    (LimitType (Boundary i t))
+deriving instance Show    (LimitType (Boundary i t))
+instance Binary    (LimitType (Boundary i t))
+instance Serialize (LimitType (Boundary i t))
+instance ToJSON    (LimitType (Boundary i t))
+instance FromJSON  (LimitType (Boundary i t))
+instance Hashable  (LimitType (Boundary i t))
+
 instance IndexStream z ⇒ IndexStream (z:.Boundary k I) where
   streamUp   (ls:..LtBoundary l) (hs:..LtBoundary h) = SM.flatten (streamUpBndMk   l h) (streamUpBndStep   l h) $ streamUp   ls hs
   streamDown (ls:..LtBoundary l) (hs:..LtBoundary h) = SM.flatten (streamDownBndMk l h) (streamDownBndStep l h) $ streamDown ls hs

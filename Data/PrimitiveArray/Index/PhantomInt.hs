@@ -72,6 +72,11 @@ deriving instance Show    (LimitType (PInt t p))
 deriving instance Read    (LimitType (PInt t p))
 deriving instance Eq      (LimitType (PInt t p))
 deriving instance Generic (LimitType (PInt t p))
+instance Binary    (LimitType (PInt t p))
+instance Serialize (LimitType (PInt t p))
+instance ToJSON    (LimitType (PInt t p))
+instance FromJSON  (LimitType (PInt t p))
+instance Hashable  (LimitType (PInt t p))
 
 instance IndexStream z => IndexStream (z:.PInt I p) where
   streamUp   (ls:..LtPInt l) (hs:..LtPInt h) = flatten (streamUpMk   l h) (streamUpStep   l h) $ streamUp ls hs

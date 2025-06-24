@@ -103,6 +103,11 @@ deriving instance Eq      (LimitType (Subword t))
 deriving instance Generic (LimitType (Subword t))
 deriving instance Read    (LimitType (Subword t))
 deriving instance Show    (LimitType (Subword t))
+instance Binary    (LimitType (Subword t))
+instance Serialize (LimitType (Subword t))
+instance ToJSON    (LimitType (Subword t))
+instance FromJSON  (LimitType (Subword t))
+instance Hashable  (LimitType (Subword t))
 
 -- | @Subword I@ (inside)
 

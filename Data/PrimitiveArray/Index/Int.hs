@@ -4,6 +4,13 @@ module Data.PrimitiveArray.Index.Int where
 import qualified Data.Vector.Fusion.Stream.Monadic as SM
 
 import           Data.PrimitiveArray.Index.Class
+import           Data.Aeson
+import           Data.Binary
+import           Data.Data
+import           Data.Hashable (Hashable)
+import           Data.Proxy
+import           Data.Serialize
+import           GHC.Generics
 
 
 
@@ -27,6 +34,13 @@ instance Index Int where
   showIndex i = ["Int " ++ show i]
 
 deriving instance Show (LimitType Int)
+deriving instance Generic (LimitType Int)
+deriving instance Eq (LimitType Int)
+instance Binary    (LimitType Int)
+instance Serialize (LimitType Int)
+instance ToJSON    (LimitType Int)
+instance FromJSON  (LimitType Int)
+instance Hashable  (LimitType Int)
 
 instance IndexStream z => IndexStream (z:.Int) where
   streamUp (ls:.. LtInt l) (hs:.. LtInt h) = SM.flatten mk step $ streamUp ls hs

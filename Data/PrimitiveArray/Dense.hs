@@ -1,3 +1,6 @@
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- | Dense primitive arrays where the lower index is zero (or the
 -- equivalent of zero for newtypes and enumerations).
@@ -24,11 +27,11 @@ import           Control.DeepSeq
 import           Control.Exception (assert)
 import           Control.Monad (liftM, forM_, zipWithM_, when)
 import           Control.Monad.Primitive (PrimState)
-import           Data.Aeson (ToJSON,FromJSON)
-import           Data.Binary (Binary)
+import           Data.Aeson (ToJSON,FromJSON,ToJSON(..),FromJSON(..), withObject, (.:), object)
+import           Data.Binary (Binary,Binary(..))
 import           Data.Data
-import           Data.Hashable (Hashable)
-import           Data.Serialize (Serialize)
+import           Data.Hashable (Hashable,Hashable(..))
+import           Data.Serialize (Serialize,Serialize(..))
 import           Data.Typeable (Typeable)
 import           Data.Vector.Binary
 import           Data.Vector.Generic.Mutable as GM hiding (length)
@@ -43,7 +46,7 @@ import qualified Data.Vector.Unboxed as VU
 
 import           Data.PrimitiveArray.Class
 import           Data.PrimitiveArray.Index.Class
-
+import qualified Data.Serialize as Data
 
 
 data Dense v sh e = Dense { _denseLimit :: !(LimitType sh), _denseV :: !(v e) }
@@ -58,7 +61,7 @@ type Boxed sh e = Dense V.Vector sh e
 
 
 deriving instance (Eq      (LimitType sh), Eq (v e)     ) => Eq      (Dense v sh e)
-deriving instance (Generic (LimitType sh), Generic (v e)) => Generic (Dense v sh e)
+-- deriving instance (Generic (LimitType sh), Generic (v e)) => Generic (Dense v sh e)
 deriving instance (Read    (LimitType sh), Read (v e)   ) => Read    (Dense v sh e)
 deriving instance (Show    (LimitType sh), Show (v e)   ) => Show    (Dense v sh e)
 deriving instance (Functor v)                             => Functor (Dense v sh)
@@ -67,15 +70,34 @@ deriving instance Typeable (Dense v sh e)
 
 deriving instance (Data (v e), Data (LimitType sh), Data e, Data sh, Typeable sh, Typeable e, Typeable v) => Data (Dense v sh e)
 
-instance (Binary    (LimitType sh), Binary    (v e), Generic (LimitType sh), Generic (v e)) => Binary    (Dense v sh e)
-instance (Serialize (LimitType sh), Serialize (v e), Generic (LimitType sh), Generic (v e)) => Serialize (Dense v sh e)
-instance (ToJSON    (LimitType sh), ToJSON    (v e), Generic (LimitType sh), Generic (v e)) => ToJSON    (Dense v sh e)
-instance (FromJSON  (LimitType sh), FromJSON  (v e), Generic (LimitType sh), Generic (v e)) => FromJSON  (Dense v sh e)
-instance (Hashable  (LimitType sh), Hashable  (v e), Generic (LimitType sh), Generic (v e)) => Hashable  (Dense v sh e)
+deriving instance (Generic (LimitType sh), Generic (v e), Generic e, VG.Vector v e) => Generic (Dense v sh e)
+-- Binary instance for Dense using GHC.Generics
+instance (Binary (LimitType sh), Binary e, VG.Vector v e, Generic (Dense v sh e)) => Binary (Dense v sh e) where
+  put (Dense limit v) = Data.Binary.put limit >> Data.Binary.put (VG.toList v)
+  get = Dense <$> Data.Binary.get <*> (VG.fromList <$> Data.Binary.get)
 
-instance (NFData (LimitType sh), NFData (v e)) ⇒ NFData (Dense v sh e) where
-  rnf (Dense h xs) = rnf h `seq` rnf xs
-  {-# Inline rnf #-}
+-- Serialize instance for Dense
+instance (Serialize (LimitType sh), Serialize e, VG.Vector v e) => Serialize (Dense v sh e) where
+  put (Dense limit v) = Data.Serialize.put limit >> Data.Serialize.put (VG.toList v)
+  get = Dense <$> Data.Serialize.get <*> (VG.fromList <$> Data.Serialize.get)
+
+-- ToJSON instance for Dense
+instance (ToJSON (LimitType sh), ToJSON e, VG.Vector v e) => ToJSON (Dense v sh e) where
+  toJSON (Dense limit v) = object [("limit", toJSON limit), ("vector", toJSON (VG.toList v))]
+
+-- FromJSON instance for Dense
+instance (FromJSON (LimitType sh), FromJSON e, VG.Vector v e) => FromJSON (Dense v sh e) where
+  parseJSON = withObject "Dense" $ \o -> Dense
+    <$> o .: "limit"
+    <*> (VG.fromList <$> o .: "vector")
+
+-- Hashable instance for Dense
+instance (Hashable (LimitType sh), Hashable e, VG.Vector v e, Eq (v e)) => Hashable (Dense v sh e) where
+  hashWithSalt salt (Dense limit v) = salt `hashWithSalt` limit `hashWithSalt` VG.toList v 
+
+-- NFData instance for Dense
+instance (NFData (LimitType sh), NFData e, VG.Vector v e) => NFData (Dense v sh e) where
+  rnf (Dense limit v) = rnf limit `seq` VG.foldl' (\_ x -> rnf x) () v
 
 
 

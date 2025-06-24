@@ -76,6 +76,18 @@ instance Index (BitSet t) where
   showBound (LtBitSet b) = ["LtBitSet " ++ show b]
   showIndex (BitSet b) = ["BitSet " ++ show b]
 
+deriving instance Show    (LimitType (BitSet t))
+deriving instance Read    (LimitType (BitSet t))
+deriving instance Eq      (LimitType (BitSet t))
+deriving instance Generic (LimitType (BitSet t))
+instance Binary      (LimitType (BitSet t))
+instance Serialize   (LimitType (BitSet t))
+instance ToJSON      (LimitType (BitSet t))
+instance ToJSONKey   (LimitType (BitSet t))
+instance FromJSON    (LimitType (BitSet t))
+instance FromJSONKey (LimitType (BitSet t))
+instance Hashable    (LimitType (BitSet t))
+
 instance SetPredSucc (BitSet t) where
   setSucc l h s
     | cs > ch                        = Nothing

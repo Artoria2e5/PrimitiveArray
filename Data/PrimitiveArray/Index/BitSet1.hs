@@ -81,7 +81,10 @@ instance Index (BitSet1 bnd ioc) where
   showBound = error "implement me"
   showIndex = error "implement me"
 
-deriving instance Show (LimitType (BitSet1 bnd ioc))
+deriving instance Show    (LimitType (BitSet1 bnd ioc))
+deriving instance Read    (LimitType (BitSet1 bnd ioc))
+deriving instance Eq      (LimitType (BitSet1 bnd ioc))
+deriving instance Generic (LimitType (BitSet1 bnd ioc))
 
 instance IndexStream z ⇒ IndexStream (z:.BitSet1 i I) where
   streamUp   (ls:..LtNumBits1 l) (hs:..LtNumBits1 h) = SM.flatten (streamUpMk   l h) (streamUpStep   l h) $ streamUp   ls hs

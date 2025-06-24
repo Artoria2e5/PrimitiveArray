@@ -90,6 +90,12 @@ deriving instance Eq      (LimitType (PointL t))
 deriving instance Generic (LimitType (PointL t))
 deriving instance Read    (LimitType (PointL t))
 deriving instance Show    (LimitType (PointL t))
+instance Binary    (LimitType (PointL t))
+instance Serialize (LimitType (PointL t))
+instance ToJSON    (LimitType (PointL t))
+instance FromJSON  (LimitType (PointL t))
+instance Hashable  (LimitType (PointL t))
+
 
 instance IndexStream z => IndexStream (z:.PointL I) where
   streamUp   (ls:..LtPointL lf) (hs:..LtPointL ht) = SM.flatten (streamUpMk   lf) (streamUpStep   PointL ht) $ streamUp ls hs
